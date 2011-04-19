@@ -36,6 +36,7 @@ class Stanza
     def self.find_or_create(parent)
       if found_x = parent.find_first('//ns:x', :ns => self.registered_ns)
         x = self.new found_x
+        parent = found_x.parent
         found_x.remove
       else
         x = self.new
@@ -63,10 +64,12 @@ class Stanza
     # @return [Blather::Stanza::X::Field]
     def fields
       self.find('ns:field', :ns => self.class.registered_ns).map do |field|
-        Field.new(field)
+        self << (f = Field.new(field))
+        field.remove
+        f
       end
     end
-
+    
     # Find a field by var
     # @param var the var for the field you wish to find
     def field(var)
@@ -148,7 +151,7 @@ class Stanza
         t << title
       end
     end
-
+    
     class Field < XMPPNode
       register :field, 'jabber:x:data'
       VALID_TYPES = [:boolean, :fixed, :hidden, :"jid-multi", :"jid-single", :"list-multi", :"list-single", :"text-multi", :"text-private", :"text-single"].freeze
@@ -260,9 +263,10 @@ class Stanza
       def value=(value)
         self.remove_children :value
         if value
-          self << (v = XMPPNode.new(:value))
-          v.namespace = self.namespace
+          v = XMPPNode.new(:value)
           v << value
+          # v.namespace = self.namespace
+          self << v
         end
       end
 
@@ -382,7 +386,7 @@ class Stanza
           self.remove_children :value
           if value
             self << (v = XMPPNode.new(:value))
-            # v.namespace = self.namespace
+            v.namespace = self.namespace
             v << value
           end
         end
