@@ -70,7 +70,7 @@ class Stanza
     # Find a field by var
     # @param var the var for the field you wish to find
     def field(var)
-      fields.detect { |f| f.var == var }
+      fields.detect { |f| f.var == var.to_s }
     end
 
     # Add an array of fields to form
@@ -382,7 +382,7 @@ class Stanza
           self.remove_children :value
           if value
             self << (v = XMPPNode.new(:value))
-            v.namespace = self.namespace
+            # v.namespace = self.namespace
             v << value
           end
         end
